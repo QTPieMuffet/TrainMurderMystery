@@ -1,11 +1,7 @@
 package dev.doctor4t.trainmurdermystery.game;
 
 import com.google.common.collect.Lists;
-import dev.doctor4t.trainmurdermystery.cca.PlayerMoodComponent;
-import dev.doctor4t.trainmurdermystery.cca.PlayerStoreComponent;
-import dev.doctor4t.trainmurdermystery.cca.TMMComponents;
-import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
-import dev.doctor4t.trainmurdermystery.cca.TrainWorldComponent;
+import dev.doctor4t.trainmurdermystery.cca.*;
 import dev.doctor4t.trainmurdermystery.entity.PlayerBodyEntity;
 import dev.doctor4t.trainmurdermystery.index.TMMEntities;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
@@ -129,6 +125,7 @@ public class GameFunctions {
             serverPlayerEntity.getInventory().clear();
             PlayerMoodComponent.KEY.get(serverPlayerEntity).reset();
             PlayerStoreComponent.KEY.get(serverPlayerEntity).reset();
+            PlayerPoisonComponent.KEY.get(serverPlayerEntity).reset();
         }
         gameComponent.resetRoleLists();
 
@@ -242,6 +239,7 @@ public class GameFunctions {
             player.teleportTo(teleportTarget);
             PlayerMoodComponent.KEY.get(player).reset();
             PlayerStoreComponent.KEY.get(player).reset();
+            PlayerPoisonComponent.KEY.get(player).reset();
         }
 
         // reset game component

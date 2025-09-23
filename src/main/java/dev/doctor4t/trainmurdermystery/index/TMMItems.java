@@ -28,6 +28,8 @@ public @SuppressWarnings("unchecked") interface TMMItems {
     Item LETTER = registrar.create("letter", new Item(new Item.Settings().maxCount(1)), EQUIPMENT_GROUP);
     Item BLACKOUT = registrar.create("blackout", new Item(new Item.Settings().maxCount(1)), EQUIPMENT_GROUP);
     Item DISGUISE = registrar.create("disguise", new Item(new Item.Settings().maxCount(1)), EQUIPMENT_GROUP);
+    Item POISON = registrar.create("poison_vial", new Item(new Item.Settings().maxCount(1)), EQUIPMENT_GROUP);
+    Item SCORPION = registrar.create("scorpion", new Item(new Item.Settings().maxCount(1)), EQUIPMENT_GROUP);
 
     static void initialize() {
         registrar.registerEntries();
