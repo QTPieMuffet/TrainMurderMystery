@@ -237,7 +237,7 @@ public interface TMMBlocks {
 
     // Op
     Block BARRIER_PANEL = registrar.createWithItem("barrier_panel", new BarrierPanelBlock(AbstractBlock.Settings.copy(NAVY_STEEL_PANEL).strength(-1.0F, 3600000.8F).nonOpaque().sounds(BlockSoundGroup.STONE)));
-    Block LIGHT_BARRIER = registrar.createWithItem("light_barrier", new BarrierBlock(((BlockSettingsAdditions)AbstractBlock.Settings.copy(Blocks.BEDROCK)).tmm$setCollidable(false)));
+    Block LIGHT_BARRIER = registrar.createWithItem("light_barrier", new LightBarrierBlock(((BlockSettingsAdditions)AbstractBlock.Settings.copy(Blocks.BARRIER)).tmm$setCollidable(false)));
 
     private static Block createBranch(String name, Block wood, BlockRegistrar registrar) {
         return registrar.createWithItem(name, new BranchBlock(AbstractBlock.Settings.copy(wood).mapColor(wood.getDefaultMapColor())), TMMItems.DECORATION_GROUP);

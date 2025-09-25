@@ -43,7 +43,10 @@
 			"trainmurdermystery:psycho",
 			"trainmurdermystery:blackout",
 			"trainmurdermystery:rolecounter"
-		]
+		],
+		"loom:injected_interfaces": {
+			"net/minecraft/class_5483/class_5496" : ["dev/doctor4t/trainmurdermystery/util/BlockSettingsAdditions"]
+		}
 	},
 	"depends": {
 		"fabricloader": "*",
