@@ -308,7 +308,7 @@ public class TMMClient implements ClientModInitializer {
     public static int getInstinctHighlight(Entity target) {
         if (!isInstinctEnabled()) return -1;
         if (target instanceof PlayerBodyEntity) return 0x606060;
-        if (target instanceof ItemEntity || target instanceof NoteEntity || target instanceof FirecrackerEntity) return 0xFFFFFF;
+        if (target instanceof ItemEntity || target instanceof NoteEntity || target instanceof FirecrackerEntity) return 0xDB9D00;
         if (target instanceof PlayerEntity player) {
             if (GameFunctions.isPlayerSpectatingOrCreative(player)) return -1;
             if (isKiller() && gameComponent.isKiller(player)) return MathHelper.hsvToRgb(0F, 1.0F, 0.6F);
