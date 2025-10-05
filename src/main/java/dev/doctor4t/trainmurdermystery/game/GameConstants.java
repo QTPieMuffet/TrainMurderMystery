@@ -33,7 +33,7 @@ public interface GameConstants {
         ITEM_COOLDOWNS.put(TMMItems.REVOLVER, getInTicks(0, 5));
         ITEM_COOLDOWNS.put(TMMItems.GRENADE, getInTicks(5, 0));
         ITEM_COOLDOWNS.put(TMMItems.LOCKPICK, getInTicks(3, 0));
-        ITEM_COOLDOWNS.put(TMMItems.CROWBAR, getInTicks(3, 0));
+        ITEM_COOLDOWNS.put(TMMItems.CROWBAR, getInTicks(1, 0));
         ITEM_COOLDOWNS.put(TMMItems.BODY_BAG, getInTicks(5, 0));
         ITEM_COOLDOWNS.put(TMMItems.PSYCHO_MODE, getInTicks(5, 0));
         ITEM_COOLDOWNS.put(TMMItems.BLACKOUT, getInTicks(3, 0));
@@ -75,10 +75,10 @@ public interface GameConstants {
 
     // Shop Variables
     List<ShopEntry> SHOP_ENTRIES = List.of(
-            new ShopEntry(TMMItems.KNIFE.getDefaultStack(), 10, ShopEntry.Type.WEAPON),
-            new ShopEntry(TMMItems.REVOLVER.getDefaultStack(), 250, ShopEntry.Type.WEAPON),
-            new ShopEntry(TMMItems.GRENADE.getDefaultStack(), 400, ShopEntry.Type.WEAPON),
-            new ShopEntry(TMMItems.PSYCHO_MODE.getDefaultStack(), 300, ShopEntry.Type.WEAPON) {
+            new ShopEntry(TMMItems.KNIFE.getDefaultStack(), 100, ShopEntry.Type.WEAPON),
+            new ShopEntry(TMMItems.REVOLVER.getDefaultStack(), 300, ShopEntry.Type.WEAPON),
+            new ShopEntry(TMMItems.GRENADE.getDefaultStack(), 600, ShopEntry.Type.WEAPON),
+            new ShopEntry(TMMItems.PSYCHO_MODE.getDefaultStack(), 250, ShopEntry.Type.WEAPON) {
                 @Override
                 public boolean onBuy(@NotNull PlayerEntity player) {
                     return PlayerShopComponent.usePsychoMode(player);
@@ -89,14 +89,14 @@ public interface GameConstants {
             new ShopEntry(TMMItems.FIRECRACKER.getDefaultStack(), 10, ShopEntry.Type.TOOL),
             new ShopEntry(TMMItems.LOCKPICK.getDefaultStack(), 50, ShopEntry.Type.TOOL),
             new ShopEntry(TMMItems.CROWBAR.getDefaultStack(), 25, ShopEntry.Type.TOOL),
-            new ShopEntry(TMMItems.BODY_BAG.getDefaultStack(), 400, ShopEntry.Type.TOOL),
+            new ShopEntry(TMMItems.BODY_BAG.getDefaultStack(), 300, ShopEntry.Type.TOOL),
             new ShopEntry(TMMItems.BLACKOUT.getDefaultStack(), 200, ShopEntry.Type.TOOL) {
                 @Override
                 public boolean onBuy(@NotNull PlayerEntity player) {
                     return PlayerShopComponent.useBlackout(player);
                 }
             },
-            new ShopEntry(new ItemStack(TMMItems.NOTE, 4), 5, ShopEntry.Type.TOOL)
+            new ShopEntry(new ItemStack(TMMItems.NOTE, 4), 10, ShopEntry.Type.TOOL)
     );
     int MONEY_START = 100;
     Function<Long, Integer> PASSIVE_MONEY_TICKER = time -> {
