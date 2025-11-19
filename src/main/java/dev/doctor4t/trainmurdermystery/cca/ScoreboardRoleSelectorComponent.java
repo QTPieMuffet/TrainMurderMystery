@@ -114,6 +114,7 @@ public class ScoreboardRoleSelectorComponent implements AutoSyncedComponent {
         var total = 0f;
         for (var player : players) {
             var weight = (float) Math.exp(-this.killerRounds.getOrDefault(player.getUuid(), 0) * 4);
+            if (!GameWorldComponent.KEY.get(world).areWeightsEnabled()) weight = 1;
             map.put(player, weight);
             total += weight;
         }
@@ -158,6 +159,7 @@ public class ScoreboardRoleSelectorComponent implements AutoSyncedComponent {
         for (var player : players) {
             if (gameComponent.isKiller(player)) continue;
             var weight = (float) Math.exp(-this.vigilanteRounds.getOrDefault(player.getUuid(), 0) * 4);
+            if (!GameWorldComponent.KEY.get(world).areWeightsEnabled()) weight = 1;
             map.put(player, weight);
             total += weight;
         }

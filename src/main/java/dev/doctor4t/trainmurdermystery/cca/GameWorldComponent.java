@@ -11,7 +11,6 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
 import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
@@ -31,6 +30,15 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     private final World world;
 
     private boolean lockedToSupporters = false;
+    private boolean enableWeights = false;
+
+    public void setWeightsEnabled(boolean enabled) {
+        this.enableWeights = enabled;
+    }
+
+    public boolean areWeightsEnabled() {
+        return enableWeights;
+    }
 
     public enum GameStatus {
         INACTIVE, STARTING, ACTIVE, STOPPING
@@ -206,6 +214,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     @Override
     public void readFromNbt(@NotNull NbtCompound nbtCompound, RegistryWrapper.WrapperLookup wrapperLookup) {
         this.setLockedToSupporters(nbtCompound.getBoolean("LockedToSupporters"));
+        this.setWeightsEnabled(nbtCompound.getBoolean("EnableWeights"));
 
         this.setGameMode(GameMode.valueOf(nbtCompound.getString("GameMode")));
         this.setGameStatus(GameStatus.valueOf(nbtCompound.getString("GameStatus")));
@@ -234,6 +243,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     @Override
     public void writeToNbt(@NotNull NbtCompound nbtCompound, RegistryWrapper.WrapperLookup wrapperLookup) {
         nbtCompound.putBoolean("LockedToSupporters", lockedToSupporters);
+        nbtCompound.putBoolean("EnableWeights", enableWeights);
 
         nbtCompound.putString("GameMode", gameMode.name());
         nbtCompound.putString("GameStatus", this.gameStatus.toString());
