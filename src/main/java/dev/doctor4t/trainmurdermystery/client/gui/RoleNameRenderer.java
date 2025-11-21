@@ -1,5 +1,6 @@
 package dev.doctor4t.trainmurdermystery.client.gui;
 
+import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.PlayerPsychoComponent;
 import dev.doctor4t.trainmurdermystery.entity.NoteEntity;
@@ -32,7 +33,7 @@ public class RoleNameRenderer {
         if (ProjectileUtil.getCollision(player, entity -> entity instanceof PlayerEntity, range) instanceof EntityHitResult entityHitResult && entityHitResult.getEntity() instanceof PlayerEntity target) {
             nametagAlpha = MathHelper.lerp(tickCounter.getTickDelta(true) / 4, nametagAlpha, 1f);
             nametag = target.getDisplayName();
-            if (component.isKiller(target)) {
+            if (component.isRole(target, TMMRoles.KILLER)) {
                 targetRole = TrainRole.KILLER;
             } else {
                 targetRole = TrainRole.BYSTANDER;
@@ -50,7 +51,7 @@ public class RoleNameRenderer {
             context.drawTextWithShadow(renderer, nametag, -nameWidth / 2, 16, MathHelper.packRgb(1f, 1f, 1f) | ((int) (nametagAlpha * 255) << 24));
             if (component.isRunning()) {
                 var playerRole = TrainRole.BYSTANDER;
-                if (component.isKiller(player)) playerRole = TrainRole.KILLER;
+                if (component.isRole(player, TMMRoles.KILLER)) playerRole = TrainRole.KILLER;
                 if (playerRole == TrainRole.KILLER && targetRole == TrainRole.KILLER) {
                     context.getMatrices().translate(0, 20 + renderer.fontHeight, 0);
                     var roleText = Text.translatable("game.tip.cohort");

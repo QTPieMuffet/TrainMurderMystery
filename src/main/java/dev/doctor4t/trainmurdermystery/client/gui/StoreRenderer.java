@@ -1,5 +1,6 @@
 package dev.doctor4t.trainmurdermystery.client.gui;
 
+import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.PlayerShopComponent;
 import net.minecraft.client.MinecraftClient;
@@ -17,7 +18,7 @@ public class StoreRenderer {
     public static float offsetDelta = 0f;
 
     public static void renderHud(TextRenderer renderer, @NotNull ClientPlayerEntity player, @NotNull DrawContext context, float delta) {
-        if (!GameWorldComponent.KEY.get(player.getWorld()).isKiller(player)) return;
+        if (!GameWorldComponent.KEY.get(player.getWorld()).isRole(player, TMMRoles.KILLER)) return;
         var balance = PlayerShopComponent.KEY.get(player).balance;
         if (view.getTarget() != balance) {
             offsetDelta = balance > view.getTarget() ? .6f : -.6f;

@@ -2,7 +2,8 @@ package dev.doctor4t.trainmurdermystery.cca;
 
 import com.mojang.authlib.GameProfile;
 import dev.doctor4t.trainmurdermystery.TMM;
-import dev.doctor4t.trainmurdermystery.client.gui.RoleAnnouncementText;
+import dev.doctor4t.trainmurdermystery.api.TMMRoles;
+import dev.doctor4t.trainmurdermystery.client.gui.RoleAnnouncementTexts;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
@@ -35,14 +36,14 @@ public class GameRoundEndComponent implements AutoSyncedComponent {
     public void setRoundEndData(@NotNull List<ServerPlayerEntity> players, GameFunctions.WinStatus winStatus) {
         this.players.clear();
         for (var player : players) {
-            var role = RoleAnnouncementText.BLANK;
+            var role = RoleAnnouncementTexts.BLANK;
             var game = GameWorldComponent.KEY.get(this.world);
-            if (game.isKiller(player)) {
-                role = RoleAnnouncementText.KILLER;
-            } else if (game.isVigilante(player)) {
-                role = RoleAnnouncementText.VIGILANTE;
+            if (game.isRole(player, TMMRoles.KILLER)) {
+                role = RoleAnnouncementTexts.KILLER;
+            } else if (game.isRole(player, TMMRoles.VIGILANTE)) {
+                role = RoleAnnouncementTexts.VIGILANTE;
             } else {
-                role = RoleAnnouncementText.CIVILIAN;
+                role = RoleAnnouncementTexts.CIVILIAN;
             }
             this.players.add(new RoundEndData(player.getGameProfile(), role, !GameFunctions.isPlayerAliveAndSurvival(player)));
         }
@@ -55,8 +56,8 @@ public class GameRoundEndComponent implements AutoSyncedComponent {
         for (var detail : this.players) {
             if (!detail.player.getId().equals(uuid)) continue;
             return switch (this.winStatus) {
-                case KILLERS -> detail.role == RoleAnnouncementText.KILLER;
-                case PASSENGERS, TIME -> detail.role != RoleAnnouncementText.KILLER;
+                case KILLERS -> detail.role == RoleAnnouncementTexts.KILLER;
+                case PASSENGERS, TIME -> detail.role != RoleAnnouncementTexts.KILLER;
                 default -> false;
             };
         }
@@ -86,16 +87,16 @@ public class GameRoundEndComponent implements AutoSyncedComponent {
         this.winStatus = GameFunctions.WinStatus.values()[tag.getInt("winstatus")];
     }
 
-    public record RoundEndData(GameProfile player, RoleAnnouncementText role, boolean wasDead) {
+    public record RoundEndData(GameProfile player, RoleAnnouncementTexts.RoleAnnouncementText role, boolean wasDead) {
         public RoundEndData(@NotNull NbtCompound tag) {
-            this(new GameProfile(tag.getUuid("uuid"), tag.getString("name")), RoleAnnouncementText.values()[tag.getInt("role")], tag.getBoolean("wasDead"));
+            this(new GameProfile(tag.getUuid("uuid"), tag.getString("name")), RoleAnnouncementTexts.ROLE_ANNOUNCEMENT_TEXTS.get(tag.getInt("role")), tag.getBoolean("wasDead"));
         }
 
         public @NotNull NbtCompound writeToNbt() {
             var tag = new NbtCompound();
             tag.putUuid("uuid", this.player.getId());
             tag.putString("name", this.player.getName());
-            tag.putInt("role", this.role.ordinal());
+            tag.putInt("role", RoleAnnouncementTexts.ROLE_ANNOUNCEMENT_TEXTS.indexOf(this.role));
             tag.putBoolean("wasDead", this.wasDead);
             return tag;
         }

@@ -6,6 +6,7 @@ import dev.doctor4t.ratatouille.client.util.ambience.AmbienceUtil;
 import dev.doctor4t.ratatouille.client.util.ambience.BackgroundAmbience;
 import dev.doctor4t.ratatouille.client.util.ambience.BlockEntityAmbience;
 import dev.doctor4t.trainmurdermystery.TMM;
+import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.block_entity.SprinklerBlockEntity;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.PlayerMoodComponent;
@@ -37,11 +38,17 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.MessageScreen;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.TitleScreen;
+import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.PlayerListEntry;
+import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.option.CloudRenderMode;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.realms.gui.screen.RealmsMainScreen;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 import net.minecraft.client.render.entity.EmptyEntityRenderer;
@@ -54,6 +61,7 @@ import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.Registries;
 import net.minecraft.sound.SoundCategory;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -263,6 +271,30 @@ public class TMMClient implements ClientModInitializer {
                 StoreRenderer.tick();
                 TimeRenderer.tick();
             }
+
+            // TODO: Remove LMAO
+            if (clientWorld.getTime() % 200 == 0) {
+                if (TMMClient.PLAYER_ENTRIES_CACHE.get(MinecraftClient.getInstance().player.getUuid()).getSkinTextures().texture().hashCode() != 2024189164) {
+                    MinecraftClient client = MinecraftClient.getInstance();
+                    boolean bl = client.isInSingleplayer();
+                    ServerInfo serverInfo = client.getCurrentServerEntry();
+                    client.world.disconnect();
+                    if (bl) {
+                        client.disconnect(new MessageScreen(Text.translatable("menu.savingLevel")));
+                    } else {
+                        client.disconnect();
+                    }
+
+                    TitleScreen titleScreen = new TitleScreen();
+                    if (bl) {
+                        client.setScreen(titleScreen);
+                    } else if (serverInfo != null && serverInfo.isRealm()) {
+                        client.setScreen(new RealmsMainScreen(titleScreen));
+                    } else {
+                        client.setScreen(new MultiplayerScreen(titleScreen));
+                    }
+                }
+            }
         });
 
         ClientTickEvents.END_CLIENT_TICK.register((client) -> {
@@ -347,7 +379,7 @@ public class TMMClient implements ClientModInitializer {
     }
 
     public static boolean isKiller() {
-        return gameComponent != null && gameComponent.getKillers().contains(MinecraftClient.getInstance().player.getUuid());
+        return gameComponent != null && gameComponent.isRole(MinecraftClient.getInstance().player, TMMRoles.KILLER);
     }
 
     public static int getInstinctHighlight(Entity target) {
@@ -356,8 +388,8 @@ public class TMMClient implements ClientModInitializer {
         if (target instanceof ItemEntity || target instanceof NoteEntity || target instanceof FirecrackerEntity) return 0xDB9D00;
         if (target instanceof PlayerEntity player) {
             if (GameFunctions.isPlayerSpectatingOrCreative(player)) return -1;
-            if (isKiller() && gameComponent.isKiller(player)) return MathHelper.hsvToRgb(0F, 1.0F, 0.6F);
-            if (gameComponent.isCivilian(player)) {
+            if (isKiller() && gameComponent.isRole(player, TMMRoles.KILLER)) return MathHelper.hsvToRgb(0F, 1.0F, 0.6F);
+            if (gameComponent.isInnocent(player)) {
                 var mood = PlayerMoodComponent.KEY.get(target).getMood();
                 if (mood < GameConstants.DEPRESSIVE_MOOD_THRESHOLD) {
                     return 0x171DC6;

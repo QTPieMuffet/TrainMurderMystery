@@ -1,6 +1,7 @@
 package dev.doctor4t.trainmurdermystery.client.gui.screen.ingame;
 
 import dev.doctor4t.trainmurdermystery.TMM;
+import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.client.gui.StoreRenderer;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
@@ -30,7 +31,7 @@ public class LimitedInventoryScreen extends LimitedHandledScreen<PlayerScreenHan
     @Override
     protected void init() {
         super.init();
-        if (!GameWorldComponent.KEY.get(this.player.getWorld()).isKiller(this.player)) return;
+        if (!GameWorldComponent.KEY.get(this.player.getWorld()).isRole(this.player, TMMRoles.KILLER)) return;
         var entries = GameConstants.SHOP_ENTRIES;
         int apart = 38;
         var x = this.width / 2 - entries.size() * apart / 2 + 9;

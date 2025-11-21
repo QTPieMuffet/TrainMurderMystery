@@ -1,7 +1,8 @@
 package dev.doctor4t.trainmurdermystery.cca;
 
 import dev.doctor4t.trainmurdermystery.TMM;
-import dev.doctor4t.trainmurdermystery.client.gui.RoleAnnouncementText;
+import dev.doctor4t.trainmurdermystery.api.TMMRoles;
+import dev.doctor4t.trainmurdermystery.client.gui.RoleAnnouncementTexts;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -12,7 +13,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
@@ -60,15 +60,15 @@ public class ScoreboardRoleSelectorComponent implements AutoSyncedComponent {
             var vigilanteWeight = Math.exp(-vigilanteRounds * 4);
             var vigilantePercent = vigilanteWeight / vigilanteTotal * 100;
             text.append(
-                    Text.literal("\n  Killer (").withColor(RoleAnnouncementText.KILLER.colour)
+                    Text.literal("\n  Killer (").withColor(RoleAnnouncementTexts.KILLER.colour)
                             .append(Text.literal("%d".formatted(killerRounds)).withColor(0x808080))
-                            .append(Text.literal("): ").withColor(RoleAnnouncementText.KILLER.colour))
+                            .append(Text.literal("): ").withColor(RoleAnnouncementTexts.KILLER.colour))
                             .append(Text.literal("%.2f%%".formatted(killerPercent)).withColor(0x808080))
             );
             text.append(
-                    Text.literal("\n  Vigilante (").withColor(RoleAnnouncementText.VIGILANTE.colour)
+                    Text.literal("\n  Vigilante (").withColor(RoleAnnouncementTexts.VIGILANTE.colour)
                             .append(Text.literal("%d".formatted(vigilanteRounds)).withColor(0x808080))
-                            .append(Text.literal("): ").withColor(RoleAnnouncementText.VIGILANTE.colour))
+                            .append(Text.literal("): ").withColor(RoleAnnouncementTexts.VIGILANTE.colour))
                             .append(Text.literal("%.2f%%".formatted(vigilantePercent)).withColor(0x808080))
             );
         }
@@ -130,7 +130,7 @@ public class ScoreboardRoleSelectorComponent implements AutoSyncedComponent {
                 }
             }
         }
-        for (var player : killers) gameComponent.addKiller(player);
+        for (var player : killers) gameComponent.addRole(player, TMMRoles.KILLER);
         return killers.size();
     }
 
@@ -145,9 +145,9 @@ public class ScoreboardRoleSelectorComponent implements AutoSyncedComponent {
         var vigilantes = new ArrayList<ServerPlayerEntity>();
         for (var uuid : this.forcedVigilantes) {
             var player = world.getPlayerByUuid(uuid);
-            if (player instanceof ServerPlayerEntity serverPlayer && players.contains(serverPlayer) && !gameComponent.isKiller(serverPlayer)) {
+            if (player instanceof ServerPlayerEntity serverPlayer && players.contains(serverPlayer) && !gameComponent.isRole(serverPlayer, TMMRoles.KILLER)) {
                 player.giveItemStack(new ItemStack(TMMItems.REVOLVER));
-                gameComponent.addVigilante(player);
+                gameComponent.addRole(player, TMMRoles.VIGILANTE);
                 vigilanteCount--;
                 this.vigilanteRounds.put(player.getUuid(), this.vigilanteRounds.getOrDefault(player.getUuid(), 1) + 1);
             }
@@ -156,7 +156,7 @@ public class ScoreboardRoleSelectorComponent implements AutoSyncedComponent {
         var map = new HashMap<ServerPlayerEntity, Float>();
         var total = 0f;
         for (var player : players) {
-            if (gameComponent.isKiller(player)) continue;
+            if (gameComponent.isRole(player, TMMRoles.KILLER)) continue;
             var weight = (float) Math.exp(-this.vigilanteRounds.getOrDefault(player.getUuid(), 0) * 4);
             if (!GameWorldComponent.KEY.get(world).areWeightsEnabled()) weight = 1;
             map.put(player, weight);
@@ -177,7 +177,7 @@ public class ScoreboardRoleSelectorComponent implements AutoSyncedComponent {
         }
         for (var player : vigilantes) {
             player.giveItemStack(new ItemStack(TMMItems.REVOLVER));
-            gameComponent.addVigilante(player);
+            gameComponent.addRole(player, TMMRoles.VIGILANTE);
         }
     }
 

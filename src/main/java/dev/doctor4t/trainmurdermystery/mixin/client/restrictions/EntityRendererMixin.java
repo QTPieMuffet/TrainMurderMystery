@@ -1,6 +1,7 @@
 package dev.doctor4t.trainmurdermystery.mixin.client.restrictions;
 
 import com.llamalad7.mixinextras.sugar.Local;
+import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.entity.Entity;
@@ -14,6 +15,6 @@ public class EntityRendererMixin<T extends Entity> {
     // changes color parameter constant
     @ModifyArg(method = "renderLabelIfPresent", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/font/TextRenderer;draw(Lnet/minecraft/text/Text;FFIZLorg/joml/Matrix4f;Lnet/minecraft/client/render/VertexConsumerProvider;Lnet/minecraft/client/font/TextRenderer$TextLayerType;II)I", ordinal = 1), index = 3)
     protected int renderLabelIfPresent(int color, @Local(argsOnly = true) T entity) {
-        return TMMClient.gameComponent.getKillers().contains(entity.getUuid()) ? Colors.RED : color;
+        return TMMClient.gameComponent.isRole(entity.getUuid(), TMMRoles.KILLER) ? Colors.RED : color;
     }
 }

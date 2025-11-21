@@ -1,6 +1,8 @@
 package dev.doctor4t.trainmurdermystery.cca;
 
 import dev.doctor4t.trainmurdermystery.TMM;
+import dev.doctor4t.trainmurdermystery.api.TMMRoles;
+import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import net.minecraft.entity.player.PlayerEntity;
@@ -11,10 +13,12 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistry;
 import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
@@ -22,6 +26,7 @@ import org.ladysnake.cca.api.v3.component.tick.ClientTickingComponent;
 import org.ladysnake.cca.api.v3.component.tick.ServerTickingComponent;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -67,9 +72,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     private GameStatus gameStatus = GameStatus.INACTIVE;
     private int fade = 0;
 
-    private List<UUID> killers = new ArrayList<>();
-
-    private List<UUID> vigilantes = new ArrayList<>();
+    private final HashMap<UUID, TMMRoles.Role> roles = new HashMap<>();
 
     private int ticksUntilNextResetAttempt = -1;
 
@@ -115,57 +118,64 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         return this.gameStatus == GameStatus.ACTIVE || this.gameStatus == GameStatus.STOPPING;
     }
 
-    public List<UUID> getKillers() {
-        return this.killers;
+    public void addRole(PlayerEntity player, TMMRoles.Role role) {
+        this.addRole(player.getUuid(), role);
     }
 
-    public void addKiller(PlayerEntity killer) {
-        this.addKiller(killer.getUuid());
+    public void addRole(UUID player, TMMRoles.Role role) {
+        this.roles.put(player, role);
     }
 
-    public void addKiller(UUID killer) {
-        this.killers.add(killer);
+    public void resetRole(TMMRoles.Role role) {
+        roles.entrySet().removeIf(entry -> entry.getValue() == role);
     }
 
-    public void setKillers(List<UUID> killers) {
-        this.killers = killers;
+    public void setRoles(List<UUID> players, TMMRoles.Role role) {
+        resetRole(role);
+
+        for (UUID player : players) {
+            addRole(player, role);
+        }
     }
 
-    public boolean isCivilian(@NotNull PlayerEntity player) {
-        return !this.killers.contains(player.getUuid());
+    public HashMap<UUID, TMMRoles.Role> getRoles() {
+        return roles;
     }
 
-    public boolean isKiller(@NotNull PlayerEntity player) {
-        return this.killers.contains(player.getUuid());
+    public TMMRoles.Role getRole(PlayerEntity player) {
+        return getRole(player.getUuid());
     }
 
-    public void resetKillerList() {
-        setKillers(new ArrayList<>());
+    public @Nullable TMMRoles.Role getRole(UUID uuid) {
+        return roles.get(uuid);
+    }
+
+    public List<UUID> getAllWithRole(TMMRoles.Role role) {
+        List<UUID> ret = new ArrayList<>();
+        roles.forEach((uuid, playerRole) -> {
+            if (playerRole == role) {
+                ret.add(uuid);
+            }
+        });
+
+        return ret;
+    }
+
+    public boolean isRole(@NotNull PlayerEntity player, TMMRoles.Role role) {
+        return isRole(player.getUuid(), role);
+    }
+
+    public boolean isRole(@NotNull UUID uuid, TMMRoles.Role role) {
+        return this.roles.get(uuid) == role;
+    }
+
+    public boolean isInnocent(@NotNull PlayerEntity player) {
+        return getRole(player) == null || getRole(player).isInnocent();
+    }
+
+    public void clearRoleMap() {
+        this.roles.clear();
         setPsychosActive(0);
-    }
-
-    public List<UUID> getVigilantes() {
-        return this.vigilantes;
-    }
-
-    public void addVigilante(@NotNull PlayerEntity vigilante) {
-        this.addVigilante(vigilante.getUuid());
-    }
-
-    public void addVigilante(UUID vigilante) {
-        this.vigilantes.add(vigilante);
-    }
-
-    public void setVigilantes(List<UUID> vigilantes) {
-        this.vigilantes = vigilantes;
-    }
-
-    public boolean isVigilante(@NotNull PlayerEntity player) {
-        return this.vigilantes.contains(player.getUuid());
-    }
-
-    public void resetVigilanteList() {
-        this.setVigilantes(new ArrayList<>());
     }
 
     public void queueTrainReset() {
@@ -222,8 +232,9 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         this.setFade(nbtCompound.getInt("Fade"));
         this.setPsychosActive(nbtCompound.getInt("PsychosActive"));
 
-        this.setKillers(uuidListFromNbt(nbtCompound, "Killers"));
-        this.setVigilantes(uuidListFromNbt(nbtCompound, "Vigilantes"));
+        for (TMMRoles.Role role : TMMRoles.ROLES) {
+            this.setRoles(uuidListFromNbt(nbtCompound, role.identifier().toString()), role);
+        }
 
         if (nbtCompound.contains("LooseEndWinner")) {
             this.setLooseEndWinner(nbtCompound.getUuid("LooseEndWinner"));
@@ -251,8 +262,9 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         nbtCompound.putInt("Fade", fade);
         nbtCompound.putInt("PsychosActive", psychosActive);
 
-        nbtCompound.put("Killers", nbtFromUuidList(getKillers()));
-        nbtCompound.put("Vigilantes", this.nbtFromUuidList(this.getVigilantes()));
+        for (TMMRoles.Role role : TMMRoles.ROLES) {
+            nbtCompound.put(role.identifier().toString(), nbtFromUuidList(getAllWithRole(role)));
+        }
 
         if (this.looseEndWinner != null) nbtCompound.putUuid("LooseEndWinner", this.looseEndWinner);
     }
@@ -274,9 +286,6 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     @Override
     public void serverTick() {
         tickCommon();
-        if (world.getTime() % 20 == 0) {
-            this.sync();
-        }
 
         if (ticksUntilNextResetAttempt-- == 0) {
             if (GameFunctions.tryResetTrain((ServerWorld) this.world)) {
@@ -318,7 +327,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
                     // passive money
                     Integer balanceToAdd = GameConstants.PASSIVE_MONEY_TICKER.apply(world.getTime());
                     if (balanceToAdd > 0) PlayerShopComponent.KEY.get(player).addToBalance(balanceToAdd);
-                    if (this.isCivilian(player) && !GameFunctions.isPlayerEliminated(player)) civilianAlive = true;
+                    if (this.isInnocent(player) && !GameFunctions.isPlayerEliminated(player)) civilianAlive = true;
                 }
 
                 // check killer win condition: kill count reached
@@ -333,7 +342,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
                     // check passenger win condition (all killers are dead)
                     if (winStatus == GameFunctions.WinStatus.NONE) {
                         winStatus = GameFunctions.WinStatus.PASSENGERS;
-                        for (UUID player : this.getKillers()) {
+                        for (UUID player : this.getAllWithRole(TMMRoles.KILLER)) {
                             if (!GameFunctions.isPlayerEliminated(serverWorld.getPlayerByUuid(player))) {
                                 winStatus = GameFunctions.WinStatus.NONE;
                             }
@@ -372,10 +381,15 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
                 if (winStatus != GameFunctions.WinStatus.NONE && this.gameStatus == GameStatus.ACTIVE) {
                     GameRoundEndComponent.KEY.get(serverWorld).setRoundEndData(serverWorld.getPlayers(), winStatus);
                     for (ServerPlayerEntity player : serverWorld.getPlayers()) {
-                        if (winStatus == GameFunctions.WinStatus.TIME && this.isKiller(player)) GameFunctions.killPlayer(player, true, null);
+                        if (winStatus == GameFunctions.WinStatus.TIME && this.isRole(player, TMMRoles.KILLER))
+                            GameFunctions.killPlayer(player, true, null);
                     }
                     GameFunctions.stopGame(serverWorld);
                 }
+            }
+
+            if (world.getTime() % 20 == 0) {
+                serverWorld.getServer().execute(this::sync);
             }
         }
     }

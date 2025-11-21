@@ -2,8 +2,9 @@ package dev.doctor4t.trainmurdermystery.game;
 
 import com.google.common.collect.Lists;
 import dev.doctor4t.trainmurdermystery.TMM;
+import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.cca.*;
-import dev.doctor4t.trainmurdermystery.client.gui.RoleAnnouncementText;
+import dev.doctor4t.trainmurdermystery.client.gui.RoleAnnouncementTexts;
 import dev.doctor4t.trainmurdermystery.compat.TrainVoicePlugin;
 import dev.doctor4t.trainmurdermystery.entity.PlayerBodyEntity;
 import dev.doctor4t.trainmurdermystery.index.TMMDataComponentTypes;
@@ -131,13 +132,13 @@ public class GameFunctions {
                 player.giveItemStack(derringer);
                 player.giveItemStack(knife);
 
-                ServerPlayNetworking.send(player, new AnnounceWelcomePayload(RoleAnnouncementText.LOOSE_END.ordinal(), -1, -1));
+                ServerPlayNetworking.send(player, new AnnounceWelcomePayload(RoleAnnouncementTexts.ROLE_ANNOUNCEMENT_TEXTS.indexOf(RoleAnnouncementTexts.LOOSE_END), -1, -1));
             }
         } else if (isMurder) {
             var killerCount = assignRolesAndGetKillerCount(world, players, gameComponent);
 
             for (var player : players) {
-                ServerPlayNetworking.send(player, new AnnounceWelcomePayload((gameComponent.isKiller(player) ? RoleAnnouncementText.KILLER : gameComponent.isVigilante(player) ? RoleAnnouncementText.VIGILANTE : RoleAnnouncementText.CIVILIAN).ordinal(), killerCount, players.size() - killerCount));
+                ServerPlayNetworking.send(player, new AnnounceWelcomePayload(RoleAnnouncementTexts.ROLE_ANNOUNCEMENT_TEXTS.indexOf(gameComponent.isRole(player, TMMRoles.KILLER) ? RoleAnnouncementTexts.KILLER : gameComponent.isRole(player, TMMRoles.VIGILANTE) ? RoleAnnouncementTexts.VIGILANTE : RoleAnnouncementTexts.CIVILIAN), killerCount, players.size() - killerCount));
             }
         }
 
@@ -200,8 +201,7 @@ public class GameFunctions {
             var copy = new HashSet<>(serverPlayerEntity.getItemCooldownManager().entries.keySet());
             for (var item : copy) serverPlayerEntity.getItemCooldownManager().remove(item);
         }
-        gameComponent.resetKillerList();
-        gameComponent.resetVigilanteList();
+        gameComponent.clearRoleMap();
         GameTimeComponent.KEY.get(world).reset();
 
         // reset train
@@ -277,8 +277,7 @@ public class GameFunctions {
         // reset game component
         GameTimeComponent.KEY.get(world).reset();
         var gameComponent = GameWorldComponent.KEY.get(world);
-        gameComponent.resetKillerList();
-        gameComponent.resetVigilanteList();
+        gameComponent.clearRoleMap();
         gameComponent.setGameStatus(GameWorldComponent.GameStatus.INACTIVE);
         trainComponent.setTime(0);
         gameComponent.sync();
@@ -364,7 +363,7 @@ public class GameFunctions {
         }
 
         var gameWorldComponent = GameWorldComponent.KEY.get(victim.getWorld());
-        if (gameWorldComponent.isCivilian(victim)) {
+        if (gameWorldComponent.isInnocent(victim)) {
             GameTimeComponent.KEY.get(victim.getWorld()).addTime(GameConstants.TIME_ON_CIVILIAN_KILL);
         }
 

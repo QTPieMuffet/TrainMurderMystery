@@ -28,7 +28,7 @@ public class RoundTextRenderer {
     private static final Map<String, Optional<GameProfile>> failCache = new HashMap<>();
     private static final int WELCOME_DURATION = 200 + GameConstants.FADE_TIME * 2;
     private static final int END_DURATION = 200;
-    private static RoleAnnouncementText role = RoleAnnouncementText.CIVILIAN;
+    private static RoleAnnouncementTexts.RoleAnnouncementText role = RoleAnnouncementTexts.CIVILIAN;
     private static int welcomeTime = 0;
     private static int killers = 0;
     private static int targets = 0;
@@ -84,7 +84,7 @@ public class RoundTextRenderer {
             context.drawTextWithShadow(renderer, winMessage, -renderer.getWidth(winMessage) / 2, -4, 0xFFFFFF);
             context.getMatrices().pop();
             if (isLooseEnds) {
-                context.drawTextWithShadow(renderer, RoleAnnouncementText.LOOSE_END.titleText, -renderer.getWidth(RoleAnnouncementText.LOOSE_END.titleText) / 2, 14, 0xFFFFFF);
+                context.drawTextWithShadow(renderer, RoleAnnouncementTexts.LOOSE_END.titleText, -renderer.getWidth(RoleAnnouncementTexts.LOOSE_END.titleText) / 2, 14, 0xFFFFFF);
                 var looseEnds = 0;
                 for (var entry : roundEnd.getPlayers()) {
                     context.getMatrices().push();
@@ -114,31 +114,30 @@ public class RoundTextRenderer {
                 context.getMatrices().pop();
             } else {
                 var vigilanteTotal = 1;
-                for (var entry : roundEnd.getPlayers()) if (entry.role() == RoleAnnouncementText.VIGILANTE) vigilanteTotal += 1;
-                context.drawTextWithShadow(renderer, RoleAnnouncementText.CIVILIAN.titleText, -renderer.getWidth(RoleAnnouncementText.CIVILIAN.titleText) / 2 - 60, 14, 0xFFFFFF);
-                context.drawTextWithShadow(renderer, RoleAnnouncementText.VIGILANTE.titleText, -renderer.getWidth(RoleAnnouncementText.VIGILANTE.titleText) / 2 + 50, 14, 0xFFFFFF);
-                context.drawTextWithShadow(renderer, RoleAnnouncementText.KILLER.titleText, -renderer.getWidth(RoleAnnouncementText.KILLER.titleText) / 2 + 50, 14 + 16 + 24 * ((vigilanteTotal) / 2), 0xFFFFFF);
+                for (var entry : roundEnd.getPlayers())
+                    if (entry.role() == RoleAnnouncementTexts.VIGILANTE) vigilanteTotal += 1;
+                context.drawTextWithShadow(renderer, RoleAnnouncementTexts.CIVILIAN.titleText, -renderer.getWidth(RoleAnnouncementTexts.CIVILIAN.titleText) / 2 - 60, 14, 0xFFFFFF);
+                context.drawTextWithShadow(renderer, RoleAnnouncementTexts.VIGILANTE.titleText, -renderer.getWidth(RoleAnnouncementTexts.VIGILANTE.titleText) / 2 + 50, 14, 0xFFFFFF);
+                context.drawTextWithShadow(renderer, RoleAnnouncementTexts.KILLER.titleText, -renderer.getWidth(RoleAnnouncementTexts.KILLER.titleText) / 2 + 50, 14 + 16 + 24 * ((vigilanteTotal) / 2), 0xFFFFFF);
                 var civilians = 0;
                 var vigilantes = 0;
                 var killers = 0;
                 for (var entry : roundEnd.getPlayers()) {
                     context.getMatrices().push();
                     context.getMatrices().scale(2f, 2f, 1f);
-                    switch (entry.role()) {
-                        case CIVILIAN -> {
-                            context.getMatrices().translate(-60 + (civilians % 4) * 12, 14 + (civilians / 4) * 12, 0);
-                            civilians++;
-                        }
-                        case VIGILANTE -> {
-                            context.getMatrices().translate(7 + (vigilantes % 2) * 12, 14 + (vigilantes / 2) * 12, 0);
-                            vigilantes++;
-                        }
-                        case KILLER -> {
-                            context.getMatrices().translate(0, 8 + ((vigilanteTotal) / 2) * 12, 0);
-                            context.getMatrices().translate(7 + (killers % 2) * 12, 14 + (killers / 2) * 12, 0);
-                            killers++;
-                        }
+
+                    if (entry.role() == RoleAnnouncementTexts.CIVILIAN) {
+                        context.getMatrices().translate(-60 + (civilians % 4) * 12, 14 + (civilians / 4) * 12, 0);
+                        civilians++;
+                    } else if (entry.role() == RoleAnnouncementTexts.VIGILANTE) {
+                        context.getMatrices().translate(7 + (vigilantes % 2) * 12, 14 + (vigilantes / 2) * 12, 0);
+                        vigilantes++;
+                    } else if (entry.role() == RoleAnnouncementTexts.KILLER) {
+                        context.getMatrices().translate(0, 8 + ((vigilanteTotal) / 2) * 12, 0);
+                        context.getMatrices().translate(7 + (killers % 2) * 12, 14 + (killers / 2) * 12, 0);
+                        killers++;
                     }
+
                     PlayerListEntry playerListEntry = TMMClient.PLAYER_ENTRIES_CACHE.get(entry.player().getId());
                     if (playerListEntry != null) {
                         var texture = playerListEntry.getSkinTextures().texture();
@@ -207,7 +206,7 @@ public class RoundTextRenderer {
         }
     }
 
-    public static void startWelcome(RoleAnnouncementText role, int killers, int targets) {
+    public static void startWelcome(RoleAnnouncementTexts.RoleAnnouncementText role, int killers, int targets) {
         RoundTextRenderer.role = role;
         welcomeTime = WELCOME_DURATION;
         RoundTextRenderer.killers = killers;

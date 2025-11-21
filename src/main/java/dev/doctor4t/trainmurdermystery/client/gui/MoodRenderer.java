@@ -1,6 +1,7 @@
 package dev.doctor4t.trainmurdermystery.client.gui;
 
 import dev.doctor4t.trainmurdermystery.TMM;
+import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.PlayerMoodComponent;
 import dev.doctor4t.trainmurdermystery.cca.PlayerPsychoComponent;
@@ -86,7 +87,7 @@ public class MoodRenderer {
             moodOffset = MathHelper.lerp(tickCounter.getTickDelta(true) / 8, moodOffset, maxRenderer.offset);
             moodTextWidth = MathHelper.lerp(tickCounter.getTickDelta(true) / 32, moodTextWidth, textRenderer.getWidth(maxRenderer.text));
         }
-        if (gameWorldComponent.isKiller(player)) {
+        if (gameWorldComponent.isRole(player, TMMRoles.KILLER)) {
             renderKiller(textRenderer, context);
         } else {
             renderCivilian(textRenderer, context, oldMood);
