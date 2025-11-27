@@ -30,8 +30,8 @@ jobs:
         restore-keys: ${{ runner.os }}-gradle-
 
     - name: Build mod with Gradle
-      run: ./gradlew build
-
+      run: build.gradle
+        CI: false
     - name: Upload Fabric mod artifact
       uses: actions/upload-artifact@v4
       with:
