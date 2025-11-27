@@ -1,0 +1,39 @@
+name: TMM mod
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Setup Java 21 (LTS recommended for 1.21.x Fabric)
+      uses: actions/setup-java@v3
+      with:
+        distribution: temurin
+        java-version: 21
+
+    - name: Cache Gradle packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper/
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: ${{ runner.os }}-gradle-
+
+    - name: Build mod with Gradle
+      run: ./gradlew build
+
+    - name: Upload Fabric mod artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: TrainMurderMystery-Fabric-1.21.1
+        path: build/libs/*.jar
