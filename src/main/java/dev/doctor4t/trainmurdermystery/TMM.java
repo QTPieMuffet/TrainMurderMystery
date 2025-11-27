@@ -140,8 +140,8 @@ public class TMM implements ModInitializer {
             runnable.run();
             return 1;
         } else {
-            player.sendMessage(Text.translatable("commands.supporter_only"));
-            return 0;
+            runnable.run();
+            return 1;
         }
     }
 
